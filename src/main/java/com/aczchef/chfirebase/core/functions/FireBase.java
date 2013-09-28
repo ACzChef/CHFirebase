@@ -6,6 +6,8 @@ import com.laytonsmith.PureUtilities.Version;
 import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.annotations.api;
+import com.laytonsmith.core.CHLog;
+import com.laytonsmith.core.constructs.CClosure;
 import com.laytonsmith.core.constructs.CVoid;
 import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
@@ -48,36 +50,58 @@ public class FireBase {
             return false;
         }
 
-        public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+        public Construct exec(final Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
             
 	    Firebase link = new Firebase(args[0].val());
             final Firebase ref;
             final String value;
+            String childern = "";
+            final CClosure callback;
 	    
             
-            if (args.length == 3) {
-                ref = link.child(args[1].val());
-                
-                value = args[2].val();
-            } else {
-                value = args[1].val();
-		ref = link;
+            switch(args.length) {
+                case 4:
+                    childern = args[1].val();
+                    value = args[2].val();
+                    callback = (CClosure) args[3];
+                    break;
+                case 3:
+                    if(args[2] instanceof CClosure) {
+                        callback = (CClosure) args[2];
+                        value = args[1].val();
+                    } else {
+                        callback = null;
+                        childern = args[1].val();
+                        value = args[2].val();
+                    }
+                    break;
+                case 2:
+                    callback = null;
+                    value = args[1].val();
+                    break;
+                //should never run
+                default: value = "";
+                    callback = null;
             }
             
+            ref = link.child(childern);
+            
+            environment.getEnv(GlobalEnv.class).GetDaemonManager().activateThread(null);
 	    threadPool.submit(new Runnable() {
-
 		public void run() {
 		    ref.setValue(value, new Firebase.CompletionListener() {
 
 			public void onComplete(FirebaseError fe) {
-			    throw new UnsupportedOperationException("Not supported yet.");
+                            if (fe != null) {
+                                CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, fe.getMessage(), t);
+                            }
 			}
 		    });
 		}
 	    });
             
             
-            environment.getEnv(GlobalEnv.class).GetDaemonManager().activateThread(null);
+            
 	    
             return new CVoid(t);
 	    
@@ -93,7 +117,7 @@ public class FireBase {
         }
 
         public String docs() {
-            return "void {firebase reference, data | firebase referencem }"
+            return "void {firebase reference, data | firebase referencem }";
         }
 
         public Version since() {
