@@ -4,13 +4,22 @@
  */
 package com.aczchef.chfirebase.core;
 
+import com.laytonsmith.core.extensions.AbstractExtension;
+import com.laytonsmith.core.extensions.MSExtension;
+
 /**
  *
  * @author Cgallarno
  */
 public class Main {
     
-    public void onLoad() {
-        
+    @MSExtension("CHFirebase")
+    public class CHFirebase extends AbstractExtension {
+
+	@Override
+	public void onStartup() {
+	    System.out.println("[CommandHelper] CHFirebase Initialized - ACzChef");
+	}
+	
     }
 }
