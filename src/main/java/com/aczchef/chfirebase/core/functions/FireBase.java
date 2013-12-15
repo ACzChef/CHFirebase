@@ -1,5 +1,6 @@
 package com.aczchef.chfirebase.core.functions;
 
+import com.aczchef.chfirebase.core.CHFirebase;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -12,6 +13,8 @@ import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.CHVersion;
 import com.laytonsmith.core.LogLevel;
 import com.laytonsmith.core.constructs.CClosure;
+import com.laytonsmith.core.constructs.CInt;
+import com.laytonsmith.core.constructs.CNull;
 import com.laytonsmith.core.constructs.CString;
 import com.laytonsmith.core.constructs.CVoid;
 import com.laytonsmith.core.constructs.Construct;
@@ -32,7 +35,7 @@ import com.laytonsmith.core.functions.Exceptions.ExceptionType;
 public class FireBase {
     
     @api
-    public static class fire_set extends AbstractFunction {
+    public static class firebase_set extends AbstractFunction {
 	
         public Exceptions.ExceptionType[] thrown() {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -82,66 +85,47 @@ public class FireBase {
             
             ref = link.child(childern);
 	    
-	    final Runnable execute = new Runnable() {
-		public void run() {
-		    ref.setValue(value, new Firebase.CompletionListener() {
-
-			public void onComplete(FirebaseError fe) {
-			    final String error;
-                            if (fe != null) {
-                                error = fe.getMessage();
-                            } else {
-				error = "";
-			    }
-			    
-			    final CString CError = new CString(error, t);
-			    StaticLayer.GetConvertor().runOnMainThreadLater(environment.getEnv(GlobalEnv.class).GetDaemonManager(), new Runnable() {
-				public void run() {
-				    try{
-					callback.execute(new Construct[]{CError});
-				    } catch(FunctionReturnException e){
-					//Just ignore this if it's returning void. Otherwise, warn.
-					//TODO: Eventually, this should be taggable as a compile error
-					if(!(e.getReturn() instanceof CVoid)){
-					    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Returning a value from the closure. The value is"
-					    + " being ignored.", t);
-					}
-				    } catch(ProgramFlowManipulationException e){
-					//This is an error
-					CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Only return may be used inside the closure.", t);
-				    } catch(ConfigRuntimeException e){
-					ConfigRuntimeException.React(e, environment);
-				    } catch(Throwable e){
-					//Other throwables we just need to report
-					CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
-					+ " information is available, but please report this error:\n" + StackTraceUtils.GetStacktrace(e), t);
-				    }
-				}
-			    });
-			}
-		    });
-		}
-	    };
-	    
 	    if (callback == null) {
 		ref.setValue(value);
 	    } else {
-		Thread th = new Thread() {
-		    @Override
-		    public void run() {
-			execute.run();
+		ref.setValue(value, new Firebase.CompletionListener() {
+
+		    public void onComplete(FirebaseError fe) {
+			final Construct CError;
+			final String error;
+                        if (fe != null) {
+                            error = fe.getMessage();
+			    CError = new CString(error, t);
+                        } else {
+			    CError = new CNull(t);
+			}
+			    try{
+				callback.execute(new Construct[]{CError});
+			    } catch(FunctionReturnException e){
+				//Just ignore this if it's returning void. Otherwise, warn.
+				//TODO: Eventually, this should be taggable as a compile error
+				if(!(e.getReturn() instanceof CVoid)){
+				    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Returning a value from the closure. The value is"
+					+ " being ignored.", t);
+				}
+			    } catch(ProgramFlowManipulationException e){
+				//This is an error
+				CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Only return may be used inside the closure.", t);
+			    } catch(ConfigRuntimeException e){
+				ConfigRuntimeException.React(e, environment);
+			    } catch(Throwable e){
+				//Other throwables we just need to report
+				CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
+				+ " information is available, but please report this error:\n" + StackTraceUtils.GetStacktrace(e), t);
+			    }
 		    }
-		};
-		
-		th.start();
+		});
 	    }
-	    
             return new CVoid(t);
-	    
         }
 
         public String getName() {
-            return "fire_set";
+            return "firebase_set";
         }
 
         public Integer[] numArgs() {
@@ -159,7 +143,7 @@ public class FireBase {
     }
     
     @api
-    public static class fire_read_once extends AbstractFunction {
+    public static class firebase_read_once extends AbstractFunction {
 
 	public ExceptionType[] thrown() {
 	    throw new UnsupportedOperationException("Not supported yet.");
@@ -195,58 +179,42 @@ public class FireBase {
 	    
 	    ref = link.child(childern);
 	    
-	    final Runnable execute = new Runnable() {
-		public void run() {
-		    ref.addListenerForSingleValueEvent(new ValueEventListener() {
+	    ref.addListenerForSingleValueEvent(new ValueEventListener() {
 
-			public void onDataChange(DataSnapshot ds) {
-			    final CString data = new CString(ds.getValue().toString(), t);
-			    StaticLayer.GetConvertor().runOnMainThreadLater(environment.getEnv(GlobalEnv.class).GetDaemonManager(), new Runnable() {
-				public void run() {
-				    try{
-					callback.execute(new Construct[]{data});
-				    } catch(FunctionReturnException e){
-					//Just ignore this if it's returning void. Otherwise, warn.
-					//TODO: Eventually, this should be taggable as a compile error
-					if(!(e.getReturn() instanceof CVoid)){
-					    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Returning a value from the closure. The value is"
-					    + " being ignored.", t);
-					}
-				    } catch(ProgramFlowManipulationException e){
-					//This is an error
-					CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Only return may be used inside the closure.", t);
-				    } catch(ConfigRuntimeException e){
-					ConfigRuntimeException.React(e, environment);
-				    } catch(Throwable e){
-					//Other throwables we just need to report
-					CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
-					+ " information is available, but please report this error:\n" + StackTraceUtils.GetStacktrace(e), t);
-				    }
-				}
-			    });
+		public void onDataChange(DataSnapshot ds) {
+		    final CString data = new CString(ds.getValue().toString(), t);
+			try{
+			    callback.execute(new Construct[]{data});
+			} catch(FunctionReturnException e){
+			    //Just ignore this if it's returning void. Otherwise, warn.
+			    //TODO: Eventually, this should be taggable as a compile error
+			    if(!(e.getReturn() instanceof CVoid)){
+			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Returning a value from the closure. The value is"
+				+ " being ignored.", t);
+			    }
+			} catch(ProgramFlowManipulationException e){
+			    //This is an error
+			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Only return may be used inside the closure.", t);
+			} catch(ConfigRuntimeException e){
+				ConfigRuntimeException.React(e, environment);
+			} catch(Throwable e){
+			    //Other throwables we just need to report
+			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
+				+ " information is available, but please report this error:\n" + StackTraceUtils.GetStacktrace(e), t);
 			}
+		}
 
-			public void onCancelled() {
-			    throw new UnsupportedOperationException("Not supported yet.");
-			}
-		    });
+		public void onCancelled() {
+		    throw new UnsupportedOperationException("Not supported yet.");
 		}
-	    };
-	    
-	    Thread th = new Thread() {
-		@Override
-		public void run() {
-		    execute.run();
-		}
-	    };
-	    th.start();
+	    });
 	    
 	    return new CVoid(t);
 	    
 	}
 
 	public String getName() {
-	    return "fire_read_once";
+	    return "firebase_read_once";
 	}
 
 	public Integer[] numArgs() {
@@ -264,7 +232,7 @@ public class FireBase {
     }
 
     @api
-    public static class fire_read extends AbstractFunction {
+    public static class firebase_read extends AbstractFunction {
 
 	public ExceptionType[] thrown() {
 	    throw new UnsupportedOperationException("Not supported yet.");
@@ -284,7 +252,6 @@ public class FireBase {
             final Firebase ref;
             String childern = "";
             final CClosure callback;
-	    
 	    switch(args.length) {
 		case 3:
 		    childern = args[1].val();
@@ -300,59 +267,128 @@ public class FireBase {
 	    
 	    ref = link.child(childern);
 	    
-	    final Runnable execute = new Runnable() {
-		public void run() {
-		    ref.addValueEventListener(new ValueEventListener() {
+	    int id = CHFirebase.addListener(ref, ref.addValueEventListener(new ValueEventListener() {
 
-			public void onDataChange(DataSnapshot ds) {
-			    final CString data = new CString(ds.getValue().toString(), t);
-			    
-			    StaticLayer.GetConvertor().runOnMainThreadLater(environment.getEnv(GlobalEnv.class).GetDaemonManager(), new Runnable() {
-				public void run() {
-				    try{
-					callback.execute(new Construct[]{data});
-				    } catch(FunctionReturnException e){
-					//Just ignore this if it's returning void. Otherwise, warn.
-					//TODO: Eventually, this should be taggable as a compile error
-					if(!(e.getReturn() instanceof CVoid)){
-					    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Returning a value from the closure. The value is"
-					    + " being ignored.", t);
-					}
-				    } catch(ProgramFlowManipulationException e){
-					//This is an error
-					CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Only return may be used inside the closure.", t);
-				    } catch(ConfigRuntimeException e){
-					ConfigRuntimeException.React(e, environment);
-				    } catch(Throwable e){
-					//Other throwables we just need to report
-					CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
-					+ " information is available, but please report this error:\n" + StackTraceUtils.GetStacktrace(e), t);
-				    }
-				}
-			    });
+		public void onDataChange(DataSnapshot ds) {
+		    final CString data = new CString(ds.getValue().toString(), t);
+			try{
+			    callback.execute(new Construct[]{data});
+			} catch(FunctionReturnException e){
+			    //Just ignore this if it's returning void. Otherwise, warn.
+			    //TODO: Eventually, this should be taggable as a compile error
+			    if(!(e.getReturn() instanceof CVoid)){
+			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Returning a value from the closure. The value is"
+				+ " being ignored.", t);
+			    }
+			} catch(ProgramFlowManipulationException e){
+			    //This is an error
+			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Only return may be used inside the closure.", t);
+			} catch(ConfigRuntimeException e){
+				ConfigRuntimeException.React(e, environment);
+			} catch(Throwable e){
+			    //Other throwables we just need to report
+			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
+				+ " information is available, but please report this error:\n" + StackTraceUtils.GetStacktrace(e), t);
 			}
+		}
 
-			public void onCancelled() {
-			    throw new UnsupportedOperationException("Not supported yet.");
-			}
-		    });
+		public void onCancelled() {
+		    throw new UnsupportedOperationException("Not supported yet.");
 		}
-	    };
-	    
-	    Thread th = new Thread() {
-		@Override
-		public void run() {
-		    execute.run();
-		}
-	    };
-	    th.start();
-	    
-	    return new CVoid(t);
+	    }));
+	    return new CInt(id, t);
 	    
 	}
 
 	public String getName() {
-	    return "fire_read";
+	    return "firebase_read";
+	}
+
+	public Integer[] numArgs() {
+	    return new Integer[] {2, 3};
+	}
+
+	public String docs() {
+	    return "";
+	}
+
+	public Version since() {
+	    return CHVersion.V3_3_1;
+	}
+	
+    }
+    
+    @api
+    public static class firebase_child_added extends AbstractFunction {
+
+	public ExceptionType[] thrown() {
+	    throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	public boolean isRestricted() {
+	    return true;
+	}
+
+	public Boolean runAsync() {
+	    return false;
+	}
+
+	public Construct exec(final Target t, final Environment environment, Construct... args) throws ConfigRuntimeException {
+	    
+	    Firebase link = new Firebase(args[0].val());
+            final Firebase ref;
+            String childern = "";
+            final CClosure callback;
+	    switch(args.length) {
+		case 3:
+		    childern = args[1].val();
+		    callback = (CClosure) args[2];
+		    break;
+		case 2:
+		    callback = (CClosure) args[1];
+		    break;
+		//Should never run
+		default:
+		    callback = null;
+	    }
+	    
+	    ref = link.child(childern);
+	    
+	    int id = CHFirebase.addListener(ref, ref.addValueEventListener(new ValueEventListener() {
+
+		public void onDataChange(DataSnapshot ds) {
+		    final CString data = new CString(ds.getValue().toString(), t);
+			try{
+			    callback.execute(new Construct[]{data});
+			} catch(FunctionReturnException e){
+			    //Just ignore this if it's returning void. Otherwise, warn.
+			    //TODO: Eventually, this should be taggable as a compile error
+			    if(!(e.getReturn() instanceof CVoid)){
+			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Returning a value from the closure. The value is"
+				+ " being ignored.", t);
+			    }
+			} catch(ProgramFlowManipulationException e){
+			    //This is an error
+			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Only return may be used inside the closure.", t);
+			} catch(ConfigRuntimeException e){
+				ConfigRuntimeException.React(e, environment);
+			} catch(Throwable e){
+			    //Other throwables we just need to report
+			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
+				+ " information is available, but please report this error:\n" + StackTraceUtils.GetStacktrace(e), t);
+			}
+		}
+
+		public void onCancelled() {
+		    throw new UnsupportedOperationException("Not supported yet.");
+		}
+	    }));
+	    return new CInt(id, t);
+	    
+	}
+
+	public String getName() {
+	    return "firebase_child_added";
 	}
 
 	public Integer[] numArgs() {
