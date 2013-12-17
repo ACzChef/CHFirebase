@@ -7,7 +7,6 @@ import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 import com.laytonsmith.PureUtilities.Common.StackTraceUtils;
 import com.laytonsmith.PureUtilities.Version;
-import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.annotations.api;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.CHVersion;
@@ -20,7 +19,6 @@ import com.laytonsmith.core.constructs.CVoid;
 import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.environments.Environment;
-import com.laytonsmith.core.environments.GlobalEnv;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.exceptions.FunctionReturnException;
 import com.laytonsmith.core.exceptions.ProgramFlowManipulationException;
@@ -397,6 +395,50 @@ public class FireBase {
 
 	public String docs() {
 	    return "";
+	}
+
+	public Version since() {
+	    return CHVersion.V3_3_1;
+	}
+	
+    }
+    
+    @api
+    public static class firebase_remove_listener extends AbstractFunction {
+
+	public ExceptionType[] thrown() {
+	    return new ExceptionType[] {ExceptionType.CastException};
+	}
+
+	public boolean isRestricted() {
+	    return true;
+	}
+
+	public Boolean runAsync() {
+	    return false;
+	}
+
+	public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+	    if (args[0] instanceof CInt) {
+		    CHFirebase.removeListener(Integer.valueOf(args[0].val()));
+
+	    } else {
+		throw new Exceptions.CastException("Expected an Integer.", t);
+	    }
+	    
+	    return new CVoid(t);
+	}
+
+	public String getName() {
+	    return "firebase_remove_listener";
+	}
+
+	public Integer[] numArgs() {
+	    return new Integer[] {1};
+	}
+
+	public String docs() {
+	    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	public Version since() {

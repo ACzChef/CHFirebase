@@ -7,7 +7,7 @@ import com.firebase.client.ValueEventListener;
  *
  * @author cgallarno
  */
-public class FirebaseValuePair {
+public class FirebaseValuePair implements FirebasePair {
     private ValueEventListener vel;
     private Firebase ref;
 
