@@ -1,6 +1,7 @@
 package com.aczchef.chfirebase.core.functions;
 
 import com.aczchef.chfirebase.core.CHFirebase;
+import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -30,7 +31,7 @@ import com.laytonsmith.core.functions.Exceptions.ExceptionType;
  *
  * @author Cgallarno
  */
-public class FireBase {
+public class DataManipulation {
     
     @api
     public static class firebase_set extends AbstractFunction {
@@ -89,8 +90,8 @@ public class FireBase {
 		ref.setValue(value, new Firebase.CompletionListener() {
 
 		    public void onComplete(FirebaseError fe) {
-			final Construct CError;
-			final String error;
+			Construct CError;
+			String error;
                         if (fe != null) {
                             error = fe.getMessage();
 			    CError = new CString(error, t);
@@ -180,7 +181,7 @@ public class FireBase {
 	    ref.addListenerForSingleValueEvent(new ValueEventListener() {
 
 		public void onDataChange(DataSnapshot ds) {
-		    final CString data = new CString(ds.getValue().toString(), t);
+		    CString data = new CString(ds.getValue().toString(), t);
 			try{
 			    callback.execute(new Construct[]{data});
 			} catch(FunctionReturnException e){
@@ -268,7 +269,7 @@ public class FireBase {
 	    int id = CHFirebase.addListener(ref, ref.addValueEventListener(new ValueEventListener() {
 
 		public void onDataChange(DataSnapshot ds) {
-		    final CString data = new CString(ds.getValue().toString(), t);
+		    CString data = new CString(ds.getValue().toString(), t);
 			try{
 			    callback.execute(new Construct[]{data});
 			} catch(FunctionReturnException e){
@@ -352,12 +353,13 @@ public class FireBase {
 	    
 	    ref = link.child(childern);
 	    
-	    int id = CHFirebase.addListener(ref, ref.addValueEventListener(new ValueEventListener() {
+	    int id = CHFirebase.addListener(ref, ref.addChildEventListener(new ChildEventListener() {
 
-		public void onDataChange(DataSnapshot ds) {
-		    final CString data = new CString(ds.getValue().toString(), t);
+                public void onChildAdded(DataSnapshot ds, String string) {
+                    CString data = new CString(ds.getValue().toString(), t);
 			try{
 			    callback.execute(new Construct[]{data});
+                            System.out.println(string);
 			} catch(FunctionReturnException e){
 			    //Just ignore this if it's returning void. Otherwise, warn.
 			    //TODO: Eventually, this should be taggable as a compile error
@@ -375,11 +377,23 @@ public class FireBase {
 			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
 				+ " information is available, but please report this error:\n" + StackTraceUtils.GetStacktrace(e), t);
 			}
-		}
+                }
 
-		public void onCancelled() {
+                public void onCancelled() {
 		    throw new UnsupportedOperationException("Not supported yet.");
 		}
+
+                public void onChildChanged(DataSnapshot ds, String string) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                public void onChildRemoved(DataSnapshot ds) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                public void onChildMoved(DataSnapshot ds, String string) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
 	    }));
 	    return new CInt(id, t);
 	    
