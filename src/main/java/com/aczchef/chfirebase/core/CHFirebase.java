@@ -1,16 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.aczchef.chfirebase.core;
 
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.Firebase;
 import com.firebase.client.ValueEventListener;
+import com.firebase.simplelogin.SimpleLogin;
+import com.firebase.simplelogin.SimpleLoginAuthenticatedHandler;
+import com.firebase.simplelogin.User;
 import com.laytonsmith.core.extensions.AbstractExtension;
 import com.laytonsmith.core.extensions.MSExtension;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -25,7 +28,19 @@ public class CHFirebase extends AbstractExtension {
     @Override
     public void onStartup() {
         System.out.println("[CommandHelper] CHFirebase: Initialized - ACzChef");
+        
+        try {
+            CHFirebaseAuth.readAuth();
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(CHFirebase.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CHFirebase.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        auth();
     }
+    
+    
 
     @Override
     public void onShutdown() {
@@ -80,5 +95,20 @@ public class CHFirebase extends AbstractExtension {
 	    removeListener(entry.getKey());
 	}
 	Counter = 0;
+    }
+    
+    public static void auth() {
+        Firebase ref;
+        ref = CHFirebaseAuth.getRef();
+        SimpleLogin authClient = new SimpleLogin(ref);
+        authClient.loginWithEmail(CHFirebaseAuth.getEmail(), CHFirebaseAuth.getPasswd(), new SimpleLoginAuthenticatedHandler() {
+            public void authenticated(com.firebase.simplelogin.enums.Error error, User user) {
+                if(error != null) {
+                    // There was an error logging into this account
+                } else {
+                    // We are now logged in
+                }
+            }
+        });
     }
 }
