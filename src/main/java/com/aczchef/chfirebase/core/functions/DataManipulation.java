@@ -89,7 +89,7 @@ public class DataManipulation {
 	    } else {
 		ref.setValue(value, new Firebase.CompletionListener() {
 
-		    public void onComplete(FirebaseError fe) {
+		    public void onComplete(FirebaseError fe, Firebase backRef) {
 			Construct CError;
 			String error;
                         if (fe != null) {
@@ -142,6 +142,114 @@ public class DataManipulation {
     }
     
     @api
+    public static class firebase_push extends AbstractFunction {
+	
+        public Exceptions.ExceptionType[] thrown() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        public boolean isRestricted() {
+            return true;
+        }
+
+        public Boolean runAsync() {
+            return false;
+        }
+
+        public Construct exec(final Target t, final Environment environment, Construct... args) throws ConfigRuntimeException {
+            
+	    Firebase link = new Firebase(args[0].val());
+            final Firebase ref;
+            final String value;
+            String childern = "";
+            final CClosure callback;
+	    
+            
+            switch(args.length) {
+                case 4:
+                    childern = args[1].val();
+                    value = args[2].val();
+                    callback = (CClosure) args[3];
+                    break;
+                case 3:
+                    if(args[2] instanceof CClosure) {
+                        callback = (CClosure) args[2];
+                        value = args[1].val();
+                    } else {
+                        callback = null;
+                        childern = args[1].val();
+                        value = args[2].val();
+                    }
+                    break;
+                case 2:
+                    callback = null;
+                    value = args[1].val();
+                    break;
+                //Should never run
+                default: value = "";
+                    callback = null;
+            }
+            
+            ref = link.child(childern).push();
+	    
+	    if (callback == null) {
+		ref.setValue(value);
+	    } else {
+		ref.setValue(value, new Firebase.CompletionListener() {
+
+		    public void onComplete(FirebaseError fe, Firebase backRef) {
+			Construct CError;
+			String error;
+                        if (fe != null) {
+                            error = fe.getMessage();
+			    CError = new CString(error, t);
+                        } else {
+			    CError = new CNull(t);
+			}
+			    try{
+				callback.execute(new Construct[]{CError});
+			    } catch(FunctionReturnException e){
+				//Just ignore this if it's returning void. Otherwise, warn.
+				//TODO: Eventually, this should be taggable as a compile error
+				if(!(e.getReturn() instanceof CVoid)){
+				    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Returning a value from the closure. The value is"
+					+ " being ignored.", t);
+				}
+			    } catch(ProgramFlowManipulationException e){
+				//This is an error
+				CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Only return may be used inside the closure.", t);
+			    } catch(ConfigRuntimeException e){
+				ConfigRuntimeException.React(e, environment);
+			    } catch(Throwable e){
+				//Other throwables we just need to report
+				CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
+				+ " information is available, but please report this error:\n" + StackTraceUtils.GetStacktrace(e), t);
+			    }
+		    }
+		});
+	    }
+            return new CVoid(t);
+        }
+
+        public String getName() {
+            return "firebase_push";
+        }
+
+        public Integer[] numArgs() {
+            return new Integer[] {2, 3, 4};
+        }
+
+        public String docs() {
+            return "void {firebase reference, data | firebase reference }";
+        }
+
+        public Version since() {
+            return CHVersion.V3_3_1;
+        }
+    
+    }
+    
+    @api
     public static class firebase_read_once extends AbstractFunction {
 
 	public ExceptionType[] thrown() {
@@ -181,7 +289,7 @@ public class DataManipulation {
 	    ref.addListenerForSingleValueEvent(new ValueEventListener() {
 
 		public void onDataChange(DataSnapshot ds) {
-		    CString data = new CString(ds.getValue().toString(), t);
+		    Construct data = Construct.GetConstruct(ds.getValue());
 			try{
 			    callback.execute(new Construct[]{data});
 			} catch(FunctionReturnException e){
@@ -203,7 +311,7 @@ public class DataManipulation {
 			}
 		}
 
-		public void onCancelled() {
+		public void onCancelled(FirebaseError fe) {
 		    throw new UnsupportedOperationException("Not supported yet.");
 		}
 	    });
@@ -269,7 +377,7 @@ public class DataManipulation {
 	    int id = CHFirebase.addListener(ref, ref.addValueEventListener(new ValueEventListener() {
 
 		public void onDataChange(DataSnapshot ds) {
-		    CString data = new CString(ds.getValue().toString(), t);
+		    Construct data = Construct.GetConstruct(ds.getValue());
 			try{
 			    callback.execute(new Construct[]{data});
 			} catch(FunctionReturnException e){
@@ -291,7 +399,7 @@ public class DataManipulation {
 			}
 		}
 
-		public void onCancelled() {
+		public void onCancelled(FirebaseError fe) {
 		    throw new UnsupportedOperationException("Not supported yet.");
 		}
 	    }));
@@ -356,10 +464,9 @@ public class DataManipulation {
 	    int id = CHFirebase.addListener(ref, ref.addChildEventListener(new ChildEventListener() {
 
                 public void onChildAdded(DataSnapshot ds, String string) {
-                    CString data = new CString(ds.getValue().toString(), t);
+                    Construct data = Construct.GetConstruct(ds.getValue());
 			try{
 			    callback.execute(new Construct[]{data});
-                            System.out.println(string);
 			} catch(FunctionReturnException e){
 			    //Just ignore this if it's returning void. Otherwise, warn.
 			    //TODO: Eventually, this should be taggable as a compile error
@@ -380,18 +487,22 @@ public class DataManipulation {
                 }
 
                 public void onCancelled() {
-		    throw new UnsupportedOperationException("Not supported yet.");
+		    
 		}
 
                 public void onChildChanged(DataSnapshot ds, String string) {
-                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                    
                 }
 
                 public void onChildRemoved(DataSnapshot ds) {
-                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                    
                 }
 
                 public void onChildMoved(DataSnapshot ds, String string) {
+                    
+                }
+
+                public void onCancelled(FirebaseError fe) {
                     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                 }
 	    }));
