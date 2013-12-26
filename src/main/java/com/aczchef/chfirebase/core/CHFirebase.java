@@ -33,9 +33,8 @@ public class CHFirebase extends AbstractExtension {
         System.out.println("[CommandHelper] CHFirebase: Initialized - ACzChef");
         
         try {
-	    if (CHFirebaseAuth.readAuthConfig()) {
-		   auth();
-	    }
+	    CHFirebaseAuth.init();
+	    auth();
         } catch (IOException ex) {
             Logger.getLogger(CHFirebase.class.getName()).log(Level.SEVERE, null, ex);
         }
