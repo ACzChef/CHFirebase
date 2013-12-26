@@ -30,13 +30,13 @@
                     <configuration>
                         <shadedClassifierName>Bundle</shadedClassifierName>
                         <artifactSet>
-                            <includes>
+                           <includes>
                                 <include>com.firebase:*:jar:*</include>
                                 <include>com.fasterxml.jackson.core:*:jar:*</include>
                                 <include>org.apache.httpcomponents:*:jar:*</include>
                                 <include>commons-logging:commons-logging:jar:*</include>
                                 <include>commons-codec:commons-codec:jar:*</include>
-                                <include>com.googlecode.json-simple:json-simple:jar:*</include>
+				<include>org.json:json</include>
                             </includes>
                         </artifactSet>
                     </configuration>
@@ -66,14 +66,14 @@
         <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>com.firebase</groupId>
-        <artifactId>firebase-simple-login</artifactId>
-        <version>[1.1.0,)</version>
+	<groupId>com.firebase</groupId>
+	<artifactId>firebase-client</artifactId>
+	<version>1.0.11</version>
     </dependency>
     <dependency>
-        <groupId>com.googlecode.json-simple</groupId>
-	<artifactId>json-simple</artifactId>
-	<version>1.1.1</version>
+	<groupId>com.firebase</groupId>
+	<artifactId>firebase-token-generator</artifactId>
+	<version>1.0.4</version>
     </dependency>
   </dependencies>
 </project>

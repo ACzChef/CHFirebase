@@ -2,18 +2,21 @@ package com.aczchef.chfirebase.core;
 
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
-import com.firebase.simplelogin.SimpleLogin;
-import com.firebase.simplelogin.SimpleLoginAuthenticatedHandler;
-import com.firebase.simplelogin.User;
+import com.firebase.security.token.TokenGenerator;
+
 import com.laytonsmith.core.extensions.AbstractExtension;
 import com.laytonsmith.core.extensions.MSExtension;
+
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -30,14 +33,12 @@ public class CHFirebase extends AbstractExtension {
         System.out.println("[CommandHelper] CHFirebase: Initialized - ACzChef");
         
         try {
-            CHFirebaseAuth.readAuth();
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(CHFirebase.class.getName()).log(Level.SEVERE, null, ex);
+	    if (CHFirebaseAuth.readAuthConfig()) {
+		   auth();
+	    }
         } catch (IOException ex) {
             Logger.getLogger(CHFirebase.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        auth();
     }
     
     
@@ -98,17 +99,30 @@ public class CHFirebase extends AbstractExtension {
     }
     
     public static void auth() {
-        Firebase ref;
+        final Firebase ref;
         ref = CHFirebaseAuth.getRef();
-        SimpleLogin authClient = new SimpleLogin(ref);
-        authClient.loginWithEmail(CHFirebaseAuth.getEmail(), CHFirebaseAuth.getPasswd(), new SimpleLoginAuthenticatedHandler() {
-            public void authenticated(com.firebase.simplelogin.enums.Error error, User user) {
-                if(error != null) {
-                    // There was an error logging into this account
-                } else {
-                    // We are now logged in
-                }
-            }
-        });
+	JSONObject arbitraryPayload = new JSONObject();
+	try {
+	    arbitraryPayload.put("CHFirebase", CHFirebaseAuth.getAuthId());
+	} catch (JSONException e) {
+	    e.printStackTrace();
+	}   
+	TokenGenerator tokenGenerator = new TokenGenerator(CHFirebaseAuth.getSecretToken());
+	String token = tokenGenerator.createToken(arbitraryPayload);
+	ref.auth(token, new Firebase.AuthListener() {
+
+	    public void onAuthError(FirebaseError fe) {
+		System.out.println("Firebase Auth Error: " + fe.getMessage());
+	    }
+
+	    public void onAuthSuccess(Object o) {
+		Map data = (Map) o;
+		System.out.println("Firebase Auth Succesful: " + ref.toString() + " - auth-id: " + ((Map) data.get("auth")).get("CHFirebase"));
+	    }
+
+	    public void onAuthRevoked(FirebaseError fe) {
+		System.out.println("Auth Acess has been Revoked: " + fe.getMessage());
+	    }
+	});
     }
 }

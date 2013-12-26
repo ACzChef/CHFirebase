@@ -1,18 +1,18 @@
 package com.aczchef.chfirebase.core;
 
 import com.firebase.client.Firebase;
+
 import com.laytonsmith.PureUtilities.Common.FileUtil;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.PureUtilities.TermColors;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -20,32 +20,24 @@ import org.json.simple.JSONValue;
  */
 public class CHFirebaseAuth {
 //    {
-//        "firebase": "brothercraft.firebaseio.com",
-//        "server_email": "user@email.com",
-//        "server_password": "super secret"
+//        "firebase": "firebase.firebaseio.com",
+//        "firebas_token": "SuperSecretToken",
+//	  "auth_id": "1"
 //    }
     private static Firebase ref;
-    private static String email;
-    private static String passwd;
-
-    public static String getEmail() {
-        return email;
-    }
-
-    public static String getPasswd() {
-        return passwd;
-    }
+    private static String secretToken;
+    private static String authId;
 
     public static Firebase getRef() {
         return ref;
     }
-
-    public static void setEmail(String email) {
-        CHFirebaseAuth.email = email;
+    
+    protected static String getSecretToken() {
+	return secretToken;
     }
 
-    public static void setPasswd(String passwd) {
-        CHFirebaseAuth.passwd = passwd;
+    public static String getAuthId() {
+	return authId;
     }
 
     public static void setRef(String ref) {
@@ -54,8 +46,16 @@ public class CHFirebaseAuth {
         }
         CHFirebaseAuth.ref = new Firebase(ref);
     }
+
+    protected static void setSecretToken(String secretToken) {
+	CHFirebaseAuth.secretToken = secretToken;
+    }
+
+    public static void setAuthId(String authId) {
+	CHFirebaseAuth.authId = authId;
+    }
     
-    public static void readAuth() throws URISyntaxException, IOException {
+    public static boolean readAuthConfig() throws IOException {
         File file;
         URL url = CHFirebase.class.getResource("/" + CHFirebase.class.getName().replace(".", "/") + ".class");
         String s = url.toString();
@@ -63,33 +63,41 @@ public class CHFirebaseAuth {
 	s = StringUtils.replaceLast(s, Pattern.quote(CHFirebase.class.getName().replace(".", "/") + ".class"), "");
         file = new File(s + "../CHFirebase.json");
         file = new File(file.getCanonicalPath());
-        System.out.println(file.getCanonicalPath());
+	
         if (file.createNewFile()) {
             FileUtil.write(
             "{\n" +
             "     \"firebase\": \"https://firebase.firebaseio.com\",\n" +
-            "     \"server_email\": \"user@email.com\",\n" +
-            "     \"server_password\": \"super secret\"\n" +
+            "     \"firebase_token\": \"superSecretToken\",\n" +
+	    "     \"auth_id\": \"1\"\n" + 
             "}", file);
             System.out.println("[CommandHelper] CHFirebase: Created config file - ACzChef");
         }
+	
+	StringBuilder invalidConfig = new StringBuilder();
+        invalidConfig.append(TermColors.RED).append("Compile Error").append(TermColors.WHITE).append(": Invalid CHfirebase Config: %err% \n\t:Delete ").append(TermColors.YELLOW).append(file.getCanonicalPath()).append(TermColors.WHITE).append(" for a default config.");
+	
         String json = FileUtil.read(file);
-        Object jsonv = JSONValue.parse(json);
-        StringBuilder invalidConfig = new StringBuilder();
-        invalidConfig.append(TermColors.RED).append("Compile Error").append(TermColors.WHITE).append(": Invalid CHfirebase Config.\n\t:Delete ").append(TermColors.YELLOW).append(file.getCanonicalPath()).append(TermColors.WHITE).append(" for a default config.");
-        if (jsonv instanceof JSONObject) {
-            JSONObject obj = (JSONObject) jsonv;
-            if (obj.containsKey("firebase") && obj.containsKey("server_email") && obj.containsKey("server_password")) {
-                setRef((String) obj.get("firebase"));
-                setEmail((String) obj.get("server_email"));
-                setPasswd((String) obj.get("server_password"));
-            } else {
-                System.out.println(invalidConfig.toString() + TermColors.reset());
-            }
-        } else {
-            System.out.println(invalidConfig.toString() + TermColors.reset());
-        }
         
+        try {
+	    JSONObject obj = new JSONObject(json);
+            if (obj.has("firebase") && obj.has("firebase_token") && obj.has("auth_id")) {
+                setRef(obj.getString("firebase"));
+                setSecretToken(obj.getString("firebase_token"));
+		setAuthId(obj.getString("auth_id"));
+            } else {
+		invalidConfig.insert(invalidConfig.indexOf("%err%"), "Cant't find your firebase URL, firebase token, or auth id.");
+		invalidConfig.replace(invalidConfig.indexOf("%err%"), invalidConfig.indexOf("%err%") + 5, "");
+                System.out.println(invalidConfig.toString() + TermColors.reset());
+		return false;
+            }
+	} catch (JSONException e) {
+	    invalidConfig.insert(invalidConfig.indexOf("%err%"), e.getMessage());
+	    invalidConfig.replace(invalidConfig.indexOf("%err%"), invalidConfig.indexOf("%err%") + 5, "");
+	    System.out.println(invalidConfig.toString() + TermColors.reset());
+	    return false;
+	}
+        return true;
     }
     
 }
