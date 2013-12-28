@@ -486,10 +486,6 @@ public class DataManipulation {
 			}
                 }
 
-                public void onCancelled() {
-		    
-		}
-
                 public void onChildChanged(DataSnapshot ds, String string) {
                     
                 }

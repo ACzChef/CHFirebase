@@ -11,7 +11,7 @@ public class FirebaseChildPair implements FirebasePair {
     private ChildEventListener cel;
     private Firebase ref;
 
-    public FirebaseChildPair(Firebase ref, ChildEventListener vel) {
+    public FirebaseChildPair(Firebase ref, ChildEventListener cel) {
 	this.ref = ref;
 	this.cel = cel;
     }
