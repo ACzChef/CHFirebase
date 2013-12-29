@@ -249,6 +249,48 @@ public class DataManipulation {
     
     }
     
+    public static class firebase_set_priority extends AbstractFunction {
+
+	public ExceptionType[] thrown() {
+	    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	public boolean isRestricted() {
+	    return true;
+	}
+
+	public Boolean runAsync() {
+	    return false;
+	}
+
+	public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+	    Firebase ref;
+	    int priority;
+	    
+	    ref = new Firebase(args[0].val());
+	    priority = Integer.getInteger(args[1].val());
+	    ref.setPriority(priority);
+	    return new CVoid(t);
+	}
+
+	public String getName() {
+	    return "firebase_set_prioirty";
+	}
+
+	public Integer[] numArgs() {
+	    return new Integer[] {2};
+	}
+
+	public String docs() {
+	    return "";
+	}
+
+	public Version since() {
+	    return CHVersion.V3_3_1;
+	}
+	
+    }
+    
     @api
     public static class firebase_read_once extends AbstractFunction {
 
