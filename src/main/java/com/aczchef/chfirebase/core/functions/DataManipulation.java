@@ -52,7 +52,7 @@ public class DataManipulation {
             
 	    Firebase link = new Firebase(args[0].val());
             final Firebase ref;
-            final String value;
+            final Object value;
             String childern = "";
             final CClosure callback;
 	    
@@ -60,22 +60,22 @@ public class DataManipulation {
             switch(args.length) {
                 case 4:
                     childern = args[1].val();
-                    value = args[2].val();
+                    value = Construct.GetPOJO(args[2]);
                     callback = (CClosure) args[3];
                     break;
                 case 3:
                     if(args[2] instanceof CClosure) {
                         callback = (CClosure) args[2];
-                        value = args[1].val();
+                        value = Construct.GetPOJO(args[1]);
                     } else {
                         callback = null;
                         childern = args[1].val();
-                        value = args[2].val();
+                        value = Construct.GetPOJO(args[2]);
                     }
                     break;
                 case 2:
                     callback = null;
-                    value = args[1].val();
+                    value = Construct.GetPOJO(args[1]);
                     break;
                 //Should never run
                 default: value = "";
@@ -160,7 +160,7 @@ public class DataManipulation {
             
 	    Firebase link = new Firebase(args[0].val());
             final Firebase ref;
-            final String value;
+            final Object value;
             String childern = "";
             final CClosure callback;
 	    
@@ -168,22 +168,22 @@ public class DataManipulation {
             switch(args.length) {
                 case 4:
                     childern = args[1].val();
-                    value = args[2].val();
+                    value = Construct.GetPOJO(args[2]);
                     callback = (CClosure) args[3];
                     break;
                 case 3:
                     if(args[2] instanceof CClosure) {
                         callback = (CClosure) args[2];
-                        value = args[1].val();
+                        value = Construct.GetPOJO(args[1]);
                     } else {
                         callback = null;
                         childern = args[1].val();
-                        value = args[2].val();
+                        value = Construct.GetPOJO(args[2]);
                     }
                     break;
                 case 2:
                     callback = null;
-                    value = args[1].val();
+                    value = Construct.GetPOJO(args[1]);
                     break;
                 //Should never run
                 default: value = "";
@@ -228,7 +228,7 @@ public class DataManipulation {
 		    }
 		});
 	    }
-            return new CVoid(t);
+            return new CString(ref.toString(), t);
         }
 
         public String getName() {
@@ -249,6 +249,7 @@ public class DataManipulation {
     
     }
     
+    @api
     public static class firebase_set_priority extends AbstractFunction {
 
 	public ExceptionType[] thrown() {
@@ -265,16 +266,21 @@ public class DataManipulation {
 
 	public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
 	    Firebase ref;
-	    int priority;
+	    long priority;
 	    
 	    ref = new Firebase(args[0].val());
-	    priority = Integer.getInteger(args[1].val());
+            if (args[1] instanceof CInt) {
+                priority = ((CInt) args[1]).getInt();
+                System.out.println(priority);
+            } else {
+                throw new ConfigRuntimeException("Expected integer for priority but recieved: " + args[1].val(), ExceptionType.CastException, t);
+            }
 	    ref.setPriority(priority);
 	    return new CVoid(t);
 	}
 
 	public String getName() {
-	    return "firebase_set_prioirty";
+	    return "firebase_set_priority";
 	}
 
 	public Integer[] numArgs() {
