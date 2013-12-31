@@ -37,7 +37,7 @@ public class DataManipulation {
     public static class firebase_set extends AbstractFunction {
 	
         public Exceptions.ExceptionType[] thrown() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return new ExceptionType[] {ExceptionType.CastException};
         }
 
         public boolean isRestricted() {
@@ -145,7 +145,7 @@ public class DataManipulation {
     public static class firebase_push extends AbstractFunction {
 	
         public Exceptions.ExceptionType[] thrown() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return new ExceptionType[] {ExceptionType.CastException};
         }
 
         public boolean isRestricted() {
@@ -253,7 +253,7 @@ public class DataManipulation {
     public static class firebase_set_priority extends AbstractFunction {
 
 	public ExceptionType[] thrown() {
-	    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	    return new ExceptionType[] {ExceptionType.CastException};
 	}
 
 	public boolean isRestricted() {
@@ -301,7 +301,7 @@ public class DataManipulation {
     public static class firebase_read_once extends AbstractFunction {
 
 	public ExceptionType[] thrown() {
-	    throw new UnsupportedOperationException("Not supported yet.");
+	    return new ExceptionType[] {ExceptionType.CastException};
 	}
 
 	public boolean isRestricted() {
@@ -392,7 +392,7 @@ public class DataManipulation {
     public static class firebase_read extends AbstractFunction {
 
 	public ExceptionType[] thrown() {
-	    throw new UnsupportedOperationException("Not supported yet.");
+	    return new ExceptionType[] {ExceptionType.CastException};
 	}
 
 	public boolean isRestricted() {
@@ -482,7 +482,7 @@ public class DataManipulation {
     public static class firebase_child_added extends AbstractFunction {
 
 	public ExceptionType[] thrown() {
-	    throw new UnsupportedOperationException("Not supported yet.");
+	    return new ExceptionType[] {ExceptionType.CastException};
 	}
 
 	public boolean isRestricted() {
