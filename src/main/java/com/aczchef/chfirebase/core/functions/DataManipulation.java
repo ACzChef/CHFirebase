@@ -1,5 +1,6 @@
 package com.aczchef.chfirebase.core.functions;
 
+import com.aczchef.chfirebase.core.CHFirebaesConfig;
 import com.aczchef.chfirebase.core.CHFirebase;
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
@@ -616,6 +617,52 @@ public class DataManipulation {
 
 	public String docs() {
 	    return "void {listener id} Unbinds a listener so that is no longer firing. All listeners are unbound on stop or reloadalisa.";
+	}
+
+	public Version since() {
+	    return CHVersion.V3_3_1;
+	}
+	
+    }
+    
+    @api
+    public static class firebase_config extends AbstractFunction {
+
+	public ExceptionType[] thrown() {
+	    return new ExceptionType[] {ExceptionType.CastException};
+	}
+
+	public boolean isRestricted() {
+	    return true;
+	}
+
+	public Boolean runAsync() {
+	    return false;
+	}
+
+	public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+	    String ret;
+	    if ("firebase-url".equals(args[0].val())) {
+		ret = CHFirebaesConfig.FirebaseUrl();
+	    } else if("auth-id".equals(args[0].val())) {
+		ret = CHFirebaesConfig.AuthId();
+	    } else {
+		throw new ConfigRuntimeException("Invalid config option", ExceptionType.NotFoundException, t);
+	    }
+	    
+	    return new CString(ret, t);
+	}
+
+	public String getName() {
+	    return "firebase_config";
+	}
+
+	public Integer[] numArgs() {
+	    return new Integer[] {1};
+	}
+
+	public String docs() {
+	    return "string {option} Returns a config option set in the CHFirebase.ini file. This is useful for using a common firebase reference. The auth-token can not be obtained through this function.";
 	}
 
 	public Version since() {
