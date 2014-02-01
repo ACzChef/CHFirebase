@@ -31,7 +31,7 @@ public class CHFirebase extends AbstractExtension {
     static Integer Counter = 0;
     
     public Version getVersion() {
-	return new SimpleVersion(1, 1, 0);
+	return new SimpleVersion(1, 2, 0);
     }
     
     @Override
