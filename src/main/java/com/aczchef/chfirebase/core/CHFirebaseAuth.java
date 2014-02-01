@@ -60,7 +60,7 @@ public class CHFirebaseAuth {
         file = new File(file.getCanonicalPath());
 	
 	CHFirebaesConfig.init(file);
-        System.out.println("[CommandHelper] CHFirebase: Config file Loaded - ACzChef");
+        CHFirebase.print("Config file Loaded - ACzChef");
 	
 	setAuthId(CHFirebaesConfig.AuthId());
 	setRef(CHFirebaesConfig.FirebaseUrl());
