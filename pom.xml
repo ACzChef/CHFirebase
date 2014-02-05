@@ -38,10 +38,61 @@
                                 <include>commons-codec:commons-codec:jar:*</include>
 				<include>org.json:json</include>
                             </includes>
-                        </artifactSet>
+			</artifactSet>
                     </configuration>
                 </execution>
             </executions>
+        </plugin>
+        <!-- Leave this alone! Compile-time checks so that your extension works. -->
+        <plugin>
+            <groupId>org.bsc.maven</groupId>
+            <artifactId>maven-processor-plugin</artifactId>
+            <version>2.2.4</version>
+ 
+            <executions>
+                <execution>
+                    <id>process</id>
+                    <phase>process-classes</phase>
+ 
+                    <goals>
+                        <goal>process</goal>
+                    </goals>
+                </execution>
+            </executions>
+ 
+            <configuration>
+                <outputDirectory>src/main/generated</outputDirectory>
+ 
+                <processors>
+                    <processor>com.laytonsmith.core.extensions.ExtensionAnnotationProcessor</processor>
+                </processors>
+            </configuration>
+        </plugin>
+ 
+        <!-- Leave this alone! Run-time extension loading speedup. -->
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.2.1</version>
+ 
+            <executions>
+                <execution>
+                    <id>cache-annotations</id>
+                    <phase>process-classes</phase>
+                    <goals>
+                        <goal>java</goal>
+                    </goals>
+                </execution>
+            </executions>
+ 
+            <configuration>
+                <mainClass>com.laytonsmith.PureUtilities.ClassLoading.Annotations.CacheAnnotations</mainClass>
+ 
+                <arguments>
+                    <argument>${basedir}/target/classes</argument>
+                    <argument>${basedir}/target/classes</argument>
+                </arguments>
+            </configuration>
         </plugin>
     </plugins>
 </build>
@@ -73,7 +124,7 @@
     <dependency>
 	<groupId>com.firebase</groupId>
 	<artifactId>firebase-token-generator</artifactId>
-	<version>1.0.4</version>
+	<version>1.0.5</version>
     </dependency>
   </dependencies>
 </project>
