@@ -1,7 +1,7 @@
 package com.aczchef.chfirebase.core;
 
-import com.firebase.client.Firebase;
 import com.firebase.client.ChildEventListener;
+import com.firebase.client.Query;
 
 /**
  *
@@ -9,15 +9,15 @@ import com.firebase.client.ChildEventListener;
  */
 public class FirebaseChildPair implements FirebasePair {
     private ChildEventListener cel;
-    private Firebase ref;
+    private Query query;
 
-    public FirebaseChildPair(Firebase ref, ChildEventListener cel) {
-	this.ref = ref;
+    public FirebaseChildPair(Query query, ChildEventListener cel) {
+	this.query = query;
 	this.cel = cel;
     }
     
-    public Firebase getFirebase() {
-	return ref;
+    public Query getQuery() {
+	return query;
     }
     
     public ChildEventListener getListener() {

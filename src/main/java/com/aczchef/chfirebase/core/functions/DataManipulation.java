@@ -6,6 +6,7 @@ import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 import com.laytonsmith.PureUtilities.Common.StackTraceUtils;
 import com.laytonsmith.PureUtilities.Version;
@@ -57,7 +58,7 @@ public class DataManipulation {
             Object value = "";
 	    Double priority = null;
             String childern = "";
-	    CArray options = null;
+	    CArray options = new CArray(t);
             CClosure callback = null;
 	    
 	    switch(args.length) {
@@ -183,7 +184,7 @@ public class DataManipulation {
             Object value = "";
 	    Double priority = null;
             String childern = "";
-	    CArray options = null;
+	    CArray options = new CArray(t);
             CClosure callback = null;
 	    
 	    switch(args.length) {
@@ -355,7 +356,7 @@ public class DataManipulation {
 	    Firebase link = new Firebase(args[0].val());
             Firebase ref;
             String childern = "";
-	    CArray options = null;
+	    CArray options = new CArray(t);
             CClosure callback = null;
 	    
 	    switch(args.length) {
@@ -376,19 +377,22 @@ public class DataManipulation {
 	    
 	    
 	    // Query
+	    Query query = ref;
+	    
 	    if (options.containsKey("limit")) {
-		ref.limit((int) ((CInt) options.get("limit")).getInt());
+		System.out.println(options.get("limit"));
+		query = query.limit((int) ((CInt) options.get("limit")).getInt());
 	    }
 	    if (options.containsKey("start")) {
-		ref.startAt(((CDouble) options.get("start")).getDouble());
+		query = query.startAt(((CDouble) options.get("start")).getDouble());
 	    }
 	    if (options.containsKey("end")) {
-		ref.endAt(((CDouble) options.get("end")).getDouble());
+		query = query.endAt(((CDouble) options.get("end")).getDouble());
 	    }
 	    
 	    //Make the callback final to be usable in the listener
 	    final CClosure finalCallback = callback;
-	    ref.addListenerForSingleValueEvent(new ValueEventListener() {
+	    query.addListenerForSingleValueEvent(new ValueEventListener() {
 
 		public void onDataChange(DataSnapshot ds) {
 		    Construct data = Construct.GetConstruct(ds.getValue());
@@ -462,7 +466,7 @@ public class DataManipulation {
 	    Firebase link = new Firebase(args[0].val());
             Firebase ref;
             String childern = "";
-	    CArray options = null;
+	    CArray options = new CArray(t);
             CClosure callback = null;
 	    switch(args.length) {
 		case 3:
@@ -481,18 +485,22 @@ public class DataManipulation {
 	    ref = link.child(childern);
 	    
 	    // Query
+	    Query query = ref;
+	    
 	    if (options.containsKey("limit")) {
-		ref.limit((int) ((CInt) options.get("limit")).getInt());
+		System.out.println(options.get("limit"));
+		query = query.limit((int) ((CInt) options.get("limit")).getInt());
 	    }
 	    if (options.containsKey("start")) {
-		ref.startAt(((CDouble) options.get("start")).getDouble());
+		query = query.startAt(((CDouble) options.get("start")).getDouble());
 	    }
 	    if (options.containsKey("end")) {
-		ref.endAt(((CDouble) options.get("end")).getDouble());
+		query = query.endAt(((CDouble) options.get("end")).getDouble());
 	    }
 	    
+            //Make the callback final to be usable in the listener
 	    final CClosure finalCallback = callback;
-	    int id = CHFirebase.addListener(ref, ref.addValueEventListener(new ValueEventListener() {
+	    int id = CHFirebase.addListener(query, query.addValueEventListener(new ValueEventListener() {
 
 		public void onDataChange(DataSnapshot ds) {
 		    Construct data = Construct.GetConstruct(ds.getValue());
@@ -564,30 +572,49 @@ public class DataManipulation {
 	public Construct exec(final Target t, final Environment environment, Construct... args) throws ConfigRuntimeException {
 	    
 	    Firebase link = new Firebase(args[0].val());
-            final Firebase ref;
+            Firebase ref;
             String childern = "";
-            final CClosure callback;
+            CArray options = new CArray(t);
+            CClosure callback = null;
 	    switch(args.length) {
 		case 3:
-		    childern = args[1].val();
+		    options = (CArray) args[1];
 		    callback = (CClosure) args[2];
 		    break;
 		case 2:
 		    callback = (CClosure) args[1];
 		    break;
-		//Should never run
-		default:
-		    callback = null;
 	    }
 	    
+            if (options.containsKey("childern")) {
+                childern = options.get("childern").val();
+            }
+            
 	    ref = link.child(childern);
 	    
-	    int id = CHFirebase.addListener(ref, ref.addChildEventListener(new ChildEventListener() {
+            // Query
+	    Query query = ref;
+	    
+	    if (options.containsKey("limit")) {
+		System.out.println(options.get("limit"));
+		query = query.limit((int) ((CInt) options.get("limit")).getInt());
+	    }
+	    if (options.containsKey("start")) {
+		query = query.startAt(((CInt) options.get("start")).getInt());
+	    }
+	    if (options.containsKey("end")) {
+		query = query.endAt(((CDouble) options.get("end")).getDouble());
+	    }
+	    
+            
+            //Make the callback final to be usable in the listener
+            final CClosure finalCallback = callback;
+	    int id = CHFirebase.addListener(query, query.addChildEventListener(new ChildEventListener() {
 
                 public void onChildAdded(DataSnapshot ds, String string) {
                     Construct data = Construct.GetConstruct(ds.getValue());
 			try{
-			    callback.execute(new Construct[]{data});
+			    finalCallback.execute(new Construct[]{data});
 			} catch(FunctionReturnException e){
 			    //Just ignore this if it's returning void. Otherwise, warn.
 			    //TODO: Eventually, this should be taggable as a compile error
