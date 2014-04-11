@@ -52,15 +52,15 @@ public class CHFirebaseAuth {
     
     public static void init() throws IOException {
         File file;
-        URL url = CHFirebase.class.getResource("/" + CHFirebase.class.getName().replace(".", "/") + ".class");
+        URL url = LifeCycle.class.getResource("/" + LifeCycle.class.getName().replace(".", "/") + ".class");
         String s = url.toString();
 	s = s.replaceFirst("jar:file:", "");
-	s = StringUtils.replaceLast(s, Pattern.quote(CHFirebase.class.getName().replace(".", "/") + ".class"), "");
+	s = StringUtils.replaceLast(s, Pattern.quote(LifeCycle.class.getName().replace(".", "/") + ".class"), "");
         file = new File(s + "../CHFirebase.ini");
         file = new File(file.getCanonicalPath());
 	
 	CHFirebaesConfig.init(file);
-        CHFirebase.print("Config file Loaded - ACzChef");
+        LifeCycle.print("Config file Loaded - ACzChef");
 	
 	setAuthId(CHFirebaesConfig.AuthId());
 	setRef(CHFirebaesConfig.FirebaseUrl());

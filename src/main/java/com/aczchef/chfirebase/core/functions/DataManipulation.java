@@ -1,7 +1,7 @@
 package com.aczchef.chfirebase.core.functions;
 
 import com.aczchef.chfirebase.core.CHFirebaesConfig;
-import com.aczchef.chfirebase.core.CHFirebase;
+import com.aczchef.chfirebase.core.LifeCycle;
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
@@ -112,7 +112,7 @@ public class DataManipulation {
                             error = fe.getMessage();
 			    CError = new CString(error, t);
                         } else {
-			    CError = new CNull(t);
+			    CError = CNull.NULL;
 			}
 			
 			try{
@@ -128,7 +128,7 @@ public class DataManipulation {
 			    //This is an error
 			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Only return may be used inside the closure.", t);
 			} catch(ConfigRuntimeException e){
-			    ConfigRuntimeException.React(e, environment);
+			    ConfigRuntimeException.HandleUncaughtException(e, environment);
 			} catch(Throwable e){
 			    //Other throwables we just need to report
 			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
@@ -142,7 +142,7 @@ public class DataManipulation {
 		    ref.setValue(value, listener);
 		}
 	    }
-            return new CVoid(t);
+            return CVoid.VOID;
         }
 
         public String getName() {
@@ -238,7 +238,7 @@ public class DataManipulation {
                             error = fe.getMessage();
 			    CError = new CString(error, t);
                         } else {
-			    CError = new CNull(t);
+			    CError = CNull.NULL;
 			}
 			
 			try{
@@ -254,7 +254,7 @@ public class DataManipulation {
 			    //This is an error
 			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Only return may be used inside the closure.", t);
 			} catch(ConfigRuntimeException e){
-			    ConfigRuntimeException.React(e, environment);
+			    ConfigRuntimeException.HandleUncaughtException(e, environment);
 			} catch(Throwable e){
 			    //Other throwables we just need to report
 			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
@@ -315,7 +315,7 @@ public class DataManipulation {
                 throw new ConfigRuntimeException("Expected integer for priority but recieved: " + args[1].val(), ExceptionType.CastException, t);
             }
 	    ref.setPriority(priority);
-	    return new CVoid(t);
+	    return CVoid.VOID;
 	}
 
 	public String getName() {
@@ -409,7 +409,7 @@ public class DataManipulation {
 			    //This is an error
 			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Only return may be used inside the closure.", t);
 			} catch(ConfigRuntimeException e){
-				ConfigRuntimeException.React(e, environment);
+				ConfigRuntimeException.HandleUncaughtException(e, environment);
 			} catch(Throwable e){
 			    //Other throwables we just need to report
 			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
@@ -422,7 +422,7 @@ public class DataManipulation {
 		}
 	    });
 	    
-	    return new CVoid(t);
+	    return CVoid.VOID;
 	    
 	}
 
@@ -500,7 +500,7 @@ public class DataManipulation {
 	    
             //Make the callback final to be usable in the listener
 	    final CClosure finalCallback = callback;
-	    int id = CHFirebase.addListener(query, query.addValueEventListener(new ValueEventListener() {
+	    int id = LifeCycle.addListener(query, query.addValueEventListener(new ValueEventListener() {
 
 		public void onDataChange(DataSnapshot ds) {
 		    Construct data = Construct.GetConstruct(ds.getValue());
@@ -517,7 +517,7 @@ public class DataManipulation {
 			    //This is an error
 			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Only return may be used inside the closure.", t);
 			} catch(ConfigRuntimeException e){
-				ConfigRuntimeException.React(e, environment);
+				ConfigRuntimeException.HandleUncaughtException(e, environment);
 			} catch(Throwable e){
 			    //Other throwables we just need to report
 			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
@@ -609,7 +609,7 @@ public class DataManipulation {
             
             //Make the callback final to be usable in the listener
             final CClosure finalCallback = callback;
-	    int id = CHFirebase.addListener(query, query.addChildEventListener(new ChildEventListener() {
+	    int id = LifeCycle.addListener(query, query.addChildEventListener(new ChildEventListener() {
 
                 public void onChildAdded(DataSnapshot ds, String string) {
                     Construct data = Construct.GetConstruct(ds.getValue());
@@ -626,7 +626,7 @@ public class DataManipulation {
 			    //This is an error
 			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.WARNING, "Only return may be used inside the closure.", t);
 			} catch(ConfigRuntimeException e){
-				ConfigRuntimeException.React(e, environment);
+				ConfigRuntimeException.HandleUncaughtException(e, environment);
 			} catch(Throwable e){
 			    //Other throwables we just need to report
 			    CHLog.GetLogger().Log(CHLog.Tags.RUNTIME, LogLevel.ERROR, "An unexpected exception has occurred. No extra"
@@ -692,12 +692,12 @@ public class DataManipulation {
 
 	public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
 	    if (args[0] instanceof CInt) {
-		    CHFirebase.removeListener(Integer.valueOf(args[0].val()));
+		    LifeCycle.removeListener(Integer.valueOf(args[0].val()));
 	    } else {
 		throw new Exceptions.CastException("Expected an Integer.", t);
 	    }
 	    
-	    return new CVoid(t);
+	    return CVoid.VOID;
 	}
 
 	public String getName() {

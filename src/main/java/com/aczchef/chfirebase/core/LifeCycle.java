@@ -29,13 +29,13 @@ import org.json.JSONObject;
  * @author Cgallarno
  */
 @MSExtension("CHFirebase")
-public class CHFirebase extends AbstractExtension {
+public class LifeCycle extends AbstractExtension {
     
     static Map<Integer, FirebasePair> Listeners = new HashMap<Integer, FirebasePair>();
     static Integer Counter = 0;
     
     public Version getVersion() {
-	return new SimpleVersion(1, 2, 0);
+	return new SimpleVersion(1, 2, 2);
     }
     
     @Override
@@ -46,7 +46,7 @@ public class CHFirebase extends AbstractExtension {
 	    CHFirebaseAuth.init();
 	    auth();
         } catch (IOException ex) {
-            Logger.getLogger(CHFirebase.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(LifeCycle.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
